@@ -10,6 +10,8 @@
 //#define relay D0
 //#define senser A0
 int Relay = D0;
+int watersensor = D6;
+int val = 0;
 
 
 #include <ESP8266WiFi.h>
@@ -32,12 +34,27 @@ BLYNK_WRITE(V1){
   }    
   //blynk.virtualWrite(D0, value)
 }
-// BLYNK_WRITE(v1){
-//   int water = param.asInt();
-//   if(water == 1){
-//     digitalWrite(senser, HIGH);
-//   }   
-// }
+BLYNK_WRITE(V0){
+  int water = param.asInt();
+  digitalWrite(Relay, LOW);
+  if(water == 1){
+    while(true) {
+      val = digitalRead(watersensor);
+      Serial.println(val);      
+      if(val == 1){
+        digitalWrite(Relay, LOW);
+        Serial.println("เปิดน้ำ");
+      }
+      else if (val == 0){
+        digitalWrite(Relay, HIGH);
+        Blynk.virtualWrite(V0, 0);
+        Serial.println("ปิดน้ำ");
+        break;
+      }
+      delay(1000);  
+    }
+  } 
+}
 
 void setup()
 {
@@ -46,8 +63,9 @@ void setup()
 
   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
 
+  digitalWrite(Relay, LOW);
   pinMode(Relay, OUTPUT);
-  digitalWrite(Relay, LOW); 
+   
   //pinMode(relay, INPUT);
 
 }
